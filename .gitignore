@@ -1,0 +1,53 @@
+# Environment variables
+.env
+*.env
+.env.*
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.virtualenv/
+pythonenv*/
+
+# IDEs and editors
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Project-specific files
+/data/*.json
+*.db
+*.sqlite3
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.~*
+*.bak
+*.tmp
+
+# Other
+.cache/
+.ipynb_checkpoints
+.python-version
