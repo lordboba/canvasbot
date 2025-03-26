@@ -2,8 +2,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from typing import Literal, Optional
+import datetime
+import pytz
 
-from utils.db import db
+from utils.db_sqlite import db
 
 class Settings(commands.Cog):
     """Commands for configuring bot settings."""
@@ -60,10 +62,29 @@ class Settings(commands.Cog):
                 )
             
             if setting is None or setting == "daily":
-                embed.add_field(
-                    name="daily:",
-                    value=f"**Description:** Sends Homework Reminders To You Daily\n**Current Status:** {('Off', 'On')[user_settings.get('daily', True)]}"
-                )
+                daily_status = ('Off', 'On')[user_settings.get('daily', True)]
+                
+                # Check if user has muted notifications
+                if 'muted_until' in user_settings:
+                    try:
+                        mute_end_time = datetime.datetime.fromisoformat(user_settings['muted_until'])
+                        mute_end_display = mute_end_time.strftime("%B %d, %Y at %I:%M %p %Z")
+                        
+                        embed.add_field(
+                            name="daily:",
+                            value=f"**Description:** Sends Homework Reminders To You Daily\n**Current Status:** {daily_status}\n**Currently Muted Until:** {mute_end_display}"
+                        )
+                    except (ValueError, TypeError):
+                        # If there's an issue with the date format, just display normal status
+                        embed.add_field(
+                            name="daily:",
+                            value=f"**Description:** Sends Homework Reminders To You Daily\n**Current Status:** {daily_status}"
+                        )
+                else:
+                    embed.add_field(
+                        name="daily:",
+                        value=f"**Description:** Sends Homework Reminders To You Daily\n**Current Status:** {daily_status}"
+                    )
             
             if setting is None or setting == "starred":
                 embed.add_field(
@@ -84,6 +105,83 @@ class Settings(commands.Cog):
             db[user_id] = user_settings
             
             await interaction.response.send_message(f"{setting} configuration successfully set to {state}!")
+    
+    @app_commands.command(name="mute", description="Mute daily notifications for a specified number of days")
+    @app_commands.describe(days="Number of days to mute notifications (1-30)")
+    async def mute(self, interaction: discord.Interaction, days: int):
+        """Mute daily notifications for a specified number of days."""
+        user_id = str(interaction.user.id)
+        
+        # Check if user has set up the bot
+        if user_id not in db:
+            await interaction.response.send_message(
+                "You have not set up the bot yet. Use the /setup command to begin this process."
+            )
+            return
+        
+        # Validate days input
+        if days < 1 or days > 30:
+            await interaction.response.send_message(
+                "Please provide a number of days between 1 and 30.",
+                ephemeral=True
+            )
+            return
+        
+        # Calculate the end date for the mute
+        current_time = datetime.datetime.now(pytz.UTC)
+        mute_end_time = current_time + datetime.timedelta(days=days)
+        
+        # Format in ISO format for storage and display
+        mute_end_iso = mute_end_time.isoformat()
+        mute_end_display = mute_end_time.strftime("%B %d, %Y at %I:%M %p %Z")
+        
+        # Update user settings
+        user_settings = db[user_id]
+        user_settings['muted_until'] = mute_end_iso
+        db[user_id] = user_settings
+        
+        # Create a response embed
+        embed = discord.Embed(
+            title="Notifications Muted",
+            description=f"Daily notifications have been muted until {mute_end_display}.",
+            color=discord.Color.blue()
+        )
+        embed.add_field(
+            name="Unmute Early",
+            value="You can unmute notifications at any time using the `/unmute` command."
+        )
+        
+        await interaction.response.send_message(embed=embed)
+    
+    @app_commands.command(name="unmute", description="Unmute daily notifications")
+    async def unmute(self, interaction: discord.Interaction):
+        """Unmute daily notifications immediately."""
+        user_id = str(interaction.user.id)
+        
+        # Check if user has set up the bot
+        if user_id not in db:
+            await interaction.response.send_message(
+                "You have not set up the bot yet. Use the /setup command to begin this process."
+            )
+            return
+        
+        user_settings = db[user_id]
+        
+        # Check if user is muted
+        if 'muted_until' not in user_settings:
+            await interaction.response.send_message(
+                "Your notifications are not currently muted.",
+                ephemeral=True
+            )
+            return
+        
+        # Remove mute
+        user_settings.pop('muted_until', None)
+        db[user_id] = user_settings
+        
+        await interaction.response.send_message(
+            "Daily notifications have been unmuted. You will now receive daily homework reminders again."
+        )
     
     @app_commands.command(name="feedback", description="Send feedback to the bot developers")
     async def feedback(self, interaction: discord.Interaction):

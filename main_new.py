@@ -8,7 +8,7 @@ import logging
 from pathlib import Path
 
 from keep_alive import keep_alive
-from utils.db import db
+from utils.db_sqlite import db
 
 # Configure logging
 logging.basicConfig(

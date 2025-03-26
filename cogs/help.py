@@ -18,6 +18,8 @@ class Help(commands.Cog):
         app_commands.Choice(name="check", value="check"),
         app_commands.Choice(name="homework", value="homework"),
         app_commands.Choice(name="settings", value="settings"),
+        app_commands.Choice(name="mute", value="mute"),
+        app_commands.Choice(name="unmute", value="unmute"),
         app_commands.Choice(name="invite", value="invite"),
         app_commands.Choice(name="help", value="help")
     ])
@@ -52,7 +54,9 @@ class Help(commands.Cog):
         
         help_embed.add_field(
             name="⚙️ Configuration Commands",
-            value="`/settings` - Configure your preferences\n",
+            value="`/settings` - Configure your preferences\n"
+                  "`/mute` - Mute daily notifications for a period of time\n"
+                  "`/unmute` - Turn notifications back on\n",
             inline=False
         )
         
@@ -164,6 +168,48 @@ class Help(commands.Cog):
                       "`ping` - Toggle sending homework info in the channel\n"
                       "`daily` - Toggle daily reminders\n"
                       "`starred` - Toggle using only starred courses",
+                inline=False
+            )
+            
+        elif command_name == "mute":
+            embed = discord.Embed(
+                title="Command: /mute",
+                description="Temporarily mute daily homework notifications.",
+                color=discord.Color.blue()
+            )
+            embed.add_field(
+                name="Usage",
+                value="`/mute days`",
+                inline=False
+            )
+            embed.add_field(
+                name="Parameters",
+                value="`days` - Number of days to mute notifications (1-30)",
+                inline=False
+            )
+            embed.add_field(
+                name="Details",
+                value="This command will silence daily homework notifications for the specified number of days. "
+                      "You can see when your mute will expire by using the `/settings` command. "
+                      "You can cancel a mute at any time using the `/unmute` command.",
+                inline=False
+            )
+            
+        elif command_name == "unmute":
+            embed = discord.Embed(
+                title="Command: /unmute",
+                description="Turn daily homework notifications back on.",
+                color=discord.Color.blue()
+            )
+            embed.add_field(
+                name="Usage",
+                value="`/unmute`",
+                inline=False
+            )
+            embed.add_field(
+                name="Details",
+                value="This command cancels any active mute and immediately resumes daily homework notifications. "
+                      "If you haven't muted notifications, this command will tell you that your notifications are already active.",
                 inline=False
             )
             

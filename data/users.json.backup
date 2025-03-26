@@ -1,0 +1,10 @@
+{
+    "726219096009605232": {
+        "id": "14809~47nJCektNECxAZAHvcEW64MMBfhaG78uBncmWrL8EV6LzBrEUu7QyxvHuVKzzaBT",
+        "dm": true,
+        "ping": true,
+        "daily": true,
+        "endpoint": "https://bruinlearn.ucla.edu/api/v1",
+        "starred": false
+    }
+}

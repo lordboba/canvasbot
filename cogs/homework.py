@@ -6,7 +6,7 @@ import asyncio
 import datetime
 import pytz
 
-from utils.db import db
+from utils.db_sqlite import db
 from utils.helpers import get_homework, get_token
 
 class Homework(commands.Cog):

@@ -2,10 +2,12 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 import datetime as dt
+import datetime
 import asyncio
+import pytz
 from aiohttp import ClientSession
 
-from utils.db import db
+from utils.db_sqlite import db
 from utils.helpers import get_homework
 
 class TasksCog(commands.Cog):
@@ -31,6 +33,25 @@ class TasksCog(commands.Cog):
             # Skip users who have disabled daily reminders
             if not user_data.get('daily', True):
                 continue
+                
+            # Skip users who have muted notifications
+            if 'muted_until' in user_data:
+                try:
+                    # Parse the mute end time
+                    mute_end_time = datetime.datetime.fromisoformat(user_data['muted_until'])
+                    current_time = datetime.datetime.now(pytz.UTC)
+                    
+                    # If the mute hasn't expired yet, skip this user
+                    if current_time < mute_end_time:
+                        continue
+                    
+                    # If the mute has expired, remove it from the user data
+                    else:
+                        user_data.pop('muted_until', None)
+                        db[user_id] = user_data
+                except (ValueError, TypeError):
+                    # If there's an issue with the date format, proceed as if not muted
+                    pass
             
             try:
                 # Get user's token and endpoint

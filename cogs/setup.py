@@ -6,7 +6,7 @@ from aiohttp import ClientSession
 import os
 from pathlib import Path
 
-from utils.db import db
+from utils.db_sqlite import db
 from utils.config import BASE_API
 
 class Setup(commands.Cog):
